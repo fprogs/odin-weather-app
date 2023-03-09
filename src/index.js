@@ -16,3 +16,23 @@ const processCurrentWeatherData = (data) => ({
   visibility: data.visibility,
   wind_speed: data.wind.speed,
 })
+
+const createIndexPage = () => {
+  const container = document.createElement("div");
+  container.classList.add("container");
+  const form = container.appendChild(document.createElement("form"));
+  form.setAttribute("id", "searchForm");
+  const searchContainer = form.appendChild(document.createElement("div"));
+  const input = searchContainer.appendChild(document.createElement("input"));
+  input.setAttribute("type", "search");
+  input.setAttribute("name", "location");
+  input.setAttribute("id", "search");
+  const button = searchContainer.appendChild(document.createElement("button"));
+  button.setAttribute("type", "submit");
+  button.textContent = "Search";
+  const content = container.appendChild(document.createElement("main"));
+  content.setAttribute("id", "weather");
+  return container;
+}
+
+document.body.appendChild(createIndexPage());
