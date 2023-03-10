@@ -1,6 +1,9 @@
+const { doc } = require("prettier");
+
 /* eslint-disable no-restricted-syntax */
 const CURRENT_WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
 const GEOCODING_API = "http://api.openweathermap.org/geo/1.0/direct";
+
 const RESPONSE_LIMIT = 10;
 
 const fetchCurrentWeather = (lat, lon) => fetch(`${CURRENT_WEATHER_API}?lat=${lat}&lon=${lon}&appid=${process.env.APPID}`)
@@ -59,6 +62,56 @@ const createIndexPage = () => {
   return container;
 }
 
+const createCurrentWeather = processedData => {
+  const container = document.createElement("div");
+
+  const locationContainer = container.appendChild(document.createElement("div"));
+  const location = locationContainer.appendChild(document.createElement("h2"));
+  location.innerHTML = `<span> Current conditions at:</span> ${processedData.name}, ${processedData.country}`;
+  const coordinates = locationContainer.appendChild(document.createElement("p"));
+  coordinates.innerHTML = `<span>Lat:</span> ${processedData.lat} <span>Lon:</span> ${processedData.lon}`;
+
+  const weatherContainer = container.appendChild(document.createElement("div"));
+  const weather = weatherContainer.appendChild(document.createElement("div"));
+  const image = weather.appendChild(document.createElement("img"));
+  image.setAttribute("src", `https://openweathermap.org/img/wn/${processedData.icon}@2x.png`);
+  image.setAttribute("alt", processedData.main);
+  const description = weather.appendChild(document.createElement("p"));
+  description.textContent = processedData.description;
+  const temp = weather.appendChild(document.createElement("p"));
+  temp.textContent = processedData.temp;
+
+  const additionalInfo = weatherContainer.appendChild(document.createElement("div"));
+  const table = additionalInfo.appendChild(document.createElement("table"));
+  const tableBody = table.appendChild(document.createElement("tbody"));
+
+  const humidityRow = tableBody.appendChild(document.createElement("tr"));
+  const humidityHeader = humidityRow.appendChild(document.createElement("th"));
+  humidityHeader.textContent = "Humidity";
+  const humidity = humidityRow.appendChild(document.createElement("td"));
+  humidity.textContent = processedData.humidity;
+
+  const windSpeedRow = tableBody.appendChild(document.createElement("tr"));
+  const windSpeedHeader = windSpeedRow.appendChild(document.createElement("th"));
+  windSpeedHeader.textContent = "Wind Speed";
+  const windSpeed = windSpeedRow.appendChild(document.createElement("td"));
+  windSpeed.textContent = processedData.wind_speed;
+
+  const visibilityRow = tableBody.appendChild(document.createElement("tr"));
+  const visibilityHeader = visibilityRow.appendChild(document.createElement("th"));
+  visibilityHeader.textContent = "Visibility";
+  const visibility = visibilityRow.appendChild(document.createElement("td"));
+  visibility.textContent = processedData.visibility;
+
+  const feelsLikeRow = tableBody.appendChild(document.createElement("tr"));
+  const feelsLikeHeader = feelsLikeRow.appendChild(document.createElement("th"));
+  feelsLikeHeader.textContent = "Feels like";
+  const feelsLike = feelsLikeRow.appendChild(document.createElement("td"));
+  feelsLike.textContent = processedData.feels_like;
+
+  return container;
+}
+
 document.body.appendChild(createIndexPage());
 document.getElementById("searchForm").addEventListener("submit", e => {
   e.preventDefault();
@@ -76,10 +129,17 @@ document.getElementById("searchForm").addEventListener("submit", e => {
           const suggestion = suggestions.at(index);
           fetchCurrentWeather(suggestion.lat, suggestion.lon)
             .then(data => {
-              console.log(processCurrentWeatherData(data));
+              const processedData = processCurrentWeatherData(data);
+              processedData.lat = suggestion.lat;
+              processedData.lon = suggestion.lon;
+              processedData.name = suggestion.name;
+              processedData.country = suggestion.country;
+              const weather = document.getElementById("weather");
+              weather.innerHTML = "";
+              weather.appendChild(createCurrentWeather(processedData));
             });
           const search = document.getElementById("search");
-          search.value = "";  
+          search.value = "";
           ul.innerHTML = "";
         });
         ul.appendChild(li);
